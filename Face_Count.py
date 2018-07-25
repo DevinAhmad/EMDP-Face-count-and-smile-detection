@@ -1,4 +1,4 @@
-#version 0.05
+#version 0.05b
 '''
 #log 0.02: tambahan write/append data total muka yang terdeteksi per menit dalam notepad
 #log 0.04: revisi sistem detik/waktu yang benar
@@ -6,7 +6,8 @@ memasukan input fps sesuai videonya
 break bila durasi video habis
 sistem interval dan delay pengecekan muka diubah, sekarang menggunakan detik, bukan frame
 #log 0.05: setting parameter detectMultiScale untuk mengatur sensitivitas dan akurasi deteksi muka
-write durasi proses, durasi video, dan parameter detectMultiScale 
+write durasi proses, durasi video, dan parameter detectMultiScale
+#log 0.05b: tambah variabel dan write interval dan delay
 '''
 
 import cv2
@@ -42,8 +43,12 @@ start=time.time()
 #minNeighbors 3 - 6, less= detect more, less accuracy
 #minSize (50, 50) for faces, limit minimum size that can be detected
 scaleFactor = 1.05
-minNeighbors= 6
+minNeighbors= 3
 minSize=	  (90, 90)
+
+#setting interval dan delay
+minInterval=4
+minDelay=4
 
 while True:
     #deteksi muka dengan cascade
@@ -55,7 +60,8 @@ while True:
       f.write('\r\n')
       f.write('Durasi proses: '+ str(time.time()-start)+ ' detik'+ '\r\n')
       f.write('Durasi video: '+ str(menit)+ ' menit '+ str(detik)+ ' detik '+ '\r\n')
-      f.write('scaleFactor= '+ str(scaleFactor)+ '\r\n'+ 'minNeighbors= '+ str(minNeighbors)+ '\r\n'+ 'minSize= '+ str(minSize))
+      f.write('scaleFactor= '+ str(scaleFactor)+ '\r\n'+ 'minNeighbors= '+ str(minNeighbors)+ '\r\n'+ 'minSize= '+ str(minSize)+'\r\n')
+      f.write('interval= '+ str(minInterval)+ '\r\n'+ 'delay= '+ str(minDelay))
       f.close()
       break
 
@@ -80,14 +86,14 @@ while True:
     if z==0:
       counter3 = counter3 + 1
       delay = counter3/fps
-      if delay >= 3:
+      if delay >= minDelay:
         delta=0
         z0=0
     
     #bila muka terdeteksi
     if z>=1:
       delay=0
-      if interval>=3:
+      if interval>=minInterval:
         counter2=0
         counter3=0
         delta = z0-z
@@ -123,7 +129,7 @@ while True:
       counter=0
     
     #cv2.putText(img,str(numDetect)+'s',(10,20), font, 0.5,(255,0,0),1,cv2.LINE_AA)
-    '''
+    
     detik=int(detik)
     cv2.putText(img,str(interval)+'s',(10,20), font, 0.5,(255,0,0),1,cv2.LINE_AA)
     cv2.putText(img,'Delta: '+str(abs(delta)),(10,40), font, 0.5,(255,0,0),1,cv2.LINE_AA)
@@ -132,14 +138,14 @@ while True:
     cv2.putText(img,'Delay: '+str(delay),(10,100), font, 0.5,(255,0,0),1,cv2.LINE_AA)
     cv2.putText(img,'Detik: '+str(detik),(10,120), font, 0.5,(255,0,0),1,cv2.LINE_AA)
     cv2.putText(img,'z0: '+str(z0),(10,140), font, 0.5,(255,0,0),1,cv2.LINE_AA)
-    '''
+    
 
     #reset counter pendeteksi muka 
     z=0
 
     #menunjukan window video(25, 33, 57) 
     #cv2.imshow('img',img)
-    #if cv2.waitKey(25) & 0xFF == ord('q'):
+    #if cv2.waitKey(1) & 0xFF == ord('q'):
     # break
  
 cap.release()
