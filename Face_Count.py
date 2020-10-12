@@ -1,16 +1,3 @@
-#version 0.06
-'''
-#log 0.02: tambahan write/append data total muka yang terdeteksi per menit dalam notepad
-#log 0.04: revisi sistem detik/waktu yang benar
-memasukan input fps sesuai videonya
-break bila durasi video habis
-sistem interval dan delay pengecekan muka diubah, sekarang menggunakan detik, bukan frame
-#log 0.05: setting parameter detectMultiScale untuk mengatur sensitivitas dan akurasi deteksi muka
-write durasi proses, durasi video, dan parameter detectMultiScale
-#log 0.05b: tambah variabel dan write interval dan delay
-#log 0.06: z counter untuk menghitung jumlah muka yang terdeteksi digantikan numDetect
-'''
-
 import cv2
 import numpy as np
 import time
@@ -39,10 +26,11 @@ f.write('\r\n')
 f.close()
 start=time.time()
 
-#parameter detectMultiScale2
+#detectMultiScale2 parameter
 #scaleFactor 1.05 - 1.4, less=better, detect less, slower (minimum=1.05)
 #minNeighbors 3 - 6, less= detect more, less accuracy
 #minSize (50, 50) for faces, limit minimum size that can be detected, less=more processing time
+
 scaleFactor = 1.05
 minNeighbors= 12
 minSize=	  (90, 90)
@@ -52,9 +40,10 @@ minInterval=4
 minDelay=4
 
 while True:
-    #deteksi muka dengan cascade
+    #Detect face with Haar Cascade
     ret, img = cap.read()
     if not ret:
+      #Detection documentation, write to test.txt
       detik=int(detik)
       durasi = time.time()-start
       print('Durasi proses: %.4f' %durasi, ' detik')
@@ -72,20 +61,20 @@ while True:
     faces, numDetect = face_cascade.detectMultiScale2(gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
     numDetect=len(numDetect)
     
-    #gambar kotak dan counter untuk muka    
+    #Draw Bounding boxes for faces    
     for (x,y,w,h) in faces:
        cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0), 2)
        
        
-    #menghitung detik asli video
+    #Count video real second
     counter=counter + 1
     detik= counter/fps
 
-    #interval deteksi
+    #Detection interval
     counter2 = counter2 + 1
     interval = counter2/fps
 
-    #delay bila tidak ada muka yang terdeteksi
+    #Delay if no face is detected
     if numDetect==0:
       counter3 = counter3 + 1
       delay = counter3/fps
@@ -93,7 +82,7 @@ while True:
         delta=0
         z0=0
     
-    #bila muka terdeteksi
+    #If a face is detected
     if numDetect>=1:
       delay=0
       if interval>=minInterval:
@@ -105,14 +94,7 @@ while True:
         z0=numDetect
      
 
-    '''
-    counter += 1;
-    if counter %1 == 0:
-        detik = time.time() - start
-        print ("time", detik)
-    '''
-
-    #print total orang per __ detik
+    #Write how many faces detected in one minute
     if detik >=60:
       menit = menit + 1
       space=120+(menit*20)
@@ -140,8 +122,6 @@ while True:
       if cv2.waitKey(1) & 0xFF == ord('q'):
         break
  
-
-    #menunjukan window video(25, 33, 57) 
       
       
         
